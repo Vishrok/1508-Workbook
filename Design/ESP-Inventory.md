@@ -13,6 +13,10 @@
 
 ### 1NF
 
+**Inventory** <span class='md'><b class='pk'>ItemNumber</b>, ItemDescription, CurrentSalePrice, InStockCount, ReorderValue</span>
+
+**OrderHistory** <span class='md'><b class='pk'>PONumber, <i class='fk'>ItemNumber</i></b>Date, SupplierNumber, Quantity, Cost</b></span>
+
 ### 2NF
 
 ### 3NF
