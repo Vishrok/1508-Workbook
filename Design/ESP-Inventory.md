@@ -66,7 +66,7 @@ NO CHANGE
 
 ## ChequeRegister
 
-![VIEW_NAME ERD](./ESP-V4Erd.png)
+![VIEW_NAME ERD](./ESP-V4-Erd.png)
 
 
 
