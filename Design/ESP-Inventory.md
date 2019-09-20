@@ -21,7 +21,7 @@
 
 **OrderHistory** <span class='md'><b class='pk'>PONumber, <i class='fk'>ItemNumber</i></b>Date, SupplierNumber, Quantity, Cost</b></span>
 
-**PurchaseOrder**  <span class='md'><b class='pk'>PONumber</b>, Date, SupplierNumber</span>
+**PurchaseOrder** <span class='md'><b class='pk'>PONumber</b>, Date, SupplierNumber</span>
 
 ### 3NF
 
@@ -48,7 +48,7 @@ NO CHANGES
 
 **PurchaseOrder** <span class='md'><b class='pk'>PurchaseOrderNumber</b>, SupplierName, SupplierNumber, Address, City, Province, PostalCode, Phone, Date, SubTotal, GST, Total</span>
 
-**PurchaseOrderItem**  <span class='md'><b class='pk'><i class='fk'>PurchaseOrderNumber</i>, ItemNumber,</b>, SupplierItemNumber, SupplierDescription, Quantity, Cost, Amount</span>
+**PurchaseOrderItem** <span class='md'><b class='pk'><i class='fk'>PurchaseOrderNumber</i>, ItemNumber,</b>, SupplierItemNumber, SupplierDescription, Quantity, Cost, Amount</span>
 
 ### 2NF
 
@@ -60,8 +60,19 @@ NO CHANGE
 
 **Supplier** <span class='md'><b class='pk'>SupplierNumber</b>, SupplierName, Address, City, Province, PostalCode, Phone</span>
 
-**PurchaseOrderItem**  <span class='md'><b class='pk'><i class='fk'>PurchaseOrderNumber</i>, ItemNumber,</b>, SupplierItemNumber, SupplierDescription, Quantity, Cost, Amount</span>
+**PurchaseOrderItem** <span class='md'><b class='pk'><i class='fk'>PurchaseOrderNumber</i>, ItemNumber,</b>, SupplierItemNumber, SupplierDescription, Quantity, Cost, Amount</span>
+
 ----
+
+## ChequeRegister
+
+![VIEW_NAME ERD](./ESP-V4Erd.png)
+
+
+
+----
+
+
 ## Legend
 
 This legend is a guide to reading and interpreting the table listings under 0NF through 3NF.
