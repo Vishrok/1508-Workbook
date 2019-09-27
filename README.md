@@ -28,3 +28,5 @@ Recommended tools for this course include:
 Other recommended resources include:
 
 - [Learn Markdown](https://commonmark.org/help/)
+
+- [SQL Download](https://go.microsoft.com/fwlink/?linkid=2104251)
