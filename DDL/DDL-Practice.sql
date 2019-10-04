@@ -60,9 +60,29 @@ CREATE TABLE [dbo].[Customers]
     [LastName]        varchar(60)         NOT NULL,
     [Address]         varchar(40)         NOT NULL,
     [City]            varchar(35)         NOT NULL,
-    [Province]        char(2)             NOT NULL,
-    [PostalCode]      char(6)             NOT NULL,
-    [PhoneNumber]     char(13)                NULL  -- NULL means the data is optional
+    [Province]        char(2)
+        CONSTRAINT DF_Customers_Province
+            DEFAULT ('AB')
+        CONSTRAINT CK_Customers_Province
+            CHECK (Province = 'AB' OR
+                   Province = 'BC' OR
+                   Province = 'SK' OR
+                   Province = 'MB' OR
+                   Province = 'QC' OR
+                   Province = 'ON' OR
+                   Province = 'NT' OR
+                   Province = 'NS' OR
+                   Province = 'NB' OR
+                   Province = 'NL' OR
+                   Province = 'YK' OR
+                   Province = 'NU' OR
+                   Province = 'PE')                NOT NULL,
+    [PostalCode]      char(6)
+        CONSTRAINT CK_PostalCode
+            CHECK (PostalCode LIKE '[A-Z][0-9][A-Z][0-9][A-Z][0-9]')             NOT NULL,
+    [PhoneNumber]     char(13)
+        CONSTRAINT CK_Customers_PhoneNumber
+            CHECK (PhoneNumber LIKE '([0-9][0-9][9-0)[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]')                NULL  -- NULL means the data is optional
 )
 
 CREATE TABLE Orders
@@ -75,9 +95,13 @@ CREATE TABLE Orders
             FOREIGN KEY REFERENCES
             Customers(CustomerNumber)                   NOT NULL,
     [Date]          datetime            NOT NULL,
-    Subtotal        money               NOT NULL,
-    GST             money               NOT NULL,
-    Total           money               NOT NULL
+    Subtotal        money               
+        CONSTRAINT CK_Orders_Subtotal
+            CHECK (Subtotal > 0)        NOT NULL,
+    GST             money       
+        CONSTRAINT CK_Orders_GST
+            CHECK (GST >= 0)             NOT NULL,
+    Total           AS Subtotal + GST --This is now a Computed Column
 )
 
 CREATE TABLE InventoryItems
@@ -103,14 +127,20 @@ CREATE TABLE OrderDetails
         CONSTRAINT FK_OrderDetails_ItemNumber_InventoryItems_ItemNumber
             FOREIGN KEY REFERENCES
             InventoryItems(ItemNumber)  NOT NULL,
-    Quantity        int                 NOT NULL,
-    SellingPrice    money               NOT NULL,
-    Amount                   AS Quantity * SellingPrice  ,
+    Quantity        int
+        CONSTRAINT DF_OrderDetails_Quantity
+            DEFAULT (1)
+        CONSTRAINT CK_OrderDetails_Quantity
+            CHECK (Quantity > 0)                 NOT NULL,
+    SellingPrice    money
+        CONSTRAINT CK_OrderDetails_SellingPrice
+            CHECK (SellingPrice >= 0)               NOT NULL,
+    Amount                   AS Quantity * SellingPrice ,
     -- The following is a Table Constraint
     -- A composite primary key MUST be done as a Table Constraint
     -- because it involves two or more columns
     CONSTRAINT PK_OrderDetails_OrderNumber_ItemNumber
-        PRIMARY KEY (OrderNumber, ItemNumber)             
+        PRIMARY KEY (OrderNumber, ItemNumber)  -- Specify all the columns in the PK           
 )
 
 
@@ -123,30 +153,50 @@ IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Payments'
 
 CREATE TABLE Payments
 (
-    PaymentID     int                   NOT NULL,
+    PaymentID     int    
+        CONSTRAINT PK_Payments_PaymentID
+            PRIMARY KEY                 NOT NULL,
     [Date]        datetime              NOT NULL,
-    PaymentAmount   money               NOT NULL,
-    PaymentType     varchar(7)          NOT NULL
+    PaymentAmount   money
+        CONSTRAINT CK_Payments_PaymentAmount
+            CHECK (PaymentAmount > 0)               NOT NULL,
+    PaymentType     varchar(7)
+        CONSTRAINT CK_Payments_PaymentType
+            CHECK (PaymentType = 'Cash' OR
+                   PaymentType =  'Cheque' OR
+                   PaymentType =  'Credit')          NOT NULL
 )
 
-/*CREATE TABLE Orders
-(
-    OrderNumber     int                 NOT NULL,
-    CustomerNumber  int                 NOT NULL,
-    [Date]          datetime            NOT NULL,
-    Subtotal        money               NOT NULL,
-    GST             money               NOT NULL,
-    Total           money               NOT NULL
-)
-*/
+
 CREATE TABLE PaymentLogDetails
 (
     OrderNumber                int               NOT NULL,
     PaymentID                  int               NOT NULL,
     PaymentNumber           smallint             NOT NULL,
-    BalanceOwing              money              NOT NULL,
+    BalanceOwing              money
+        CONSTRAINT CK_PaymentLogDetails_BalanceOwing
+            CHECK (BalanceOwing > 0)             NOT NULL,
     DepositBatchNumber         int               NOT NULL
 )
+
+
+--Let's insert a few rows of data for the tables (DML Statments)
+PRINT 'Inserting customer data'
+INSERT INTO Customers(FirstName, LastName, [Address], City, PostalCode)
+    VALUES ('Clark','Kent','344 Clinton Street', 'Metropolis', 'S0S0N0')
+INSERT INTO Customers(FirstName, LastName, [Address], City, PostalCode)
+    VALUES ('Jimmy', 'Olsen', '242 River Close', 'Bakerline', 'B4K3R1')
+PRINT '-- end of customer data--'
+PRINT''
+
+-- Let's write an SQL Query statment to veiw the data in the database
+-- Select the customer information
+SELECT CustomerNumber, FirstName, LastName,
+        [Address] + '' + City + ',' + Province AS 'Customer Address',
+        PhoneNumber
+FROM Customers
+
+
 
     /* =================Practice SQL Below=============================================*/
 
