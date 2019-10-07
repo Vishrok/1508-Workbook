@@ -82,7 +82,7 @@ CREATE TABLE [dbo].[Customers]
             CHECK (PostalCode LIKE '[A-Z][0-9][A-Z][0-9][A-Z][0-9]')             NOT NULL,
     [PhoneNumber]     char(13)
         CONSTRAINT CK_Customers_PhoneNumber
-            CHECK (PhoneNumber LIKE '([0-9][0-9][9-0)[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]')                NULL  -- NULL means the data is optional
+            CHECK (PhoneNumber LIKE '([0-9][0-9][0-9])[0-9][0-9][0-9]-[0-9][0-9][0-9][0-9]')                NULL  -- NULL means the data is optional
 )
 
 CREATE TABLE Orders
@@ -179,6 +179,59 @@ CREATE TABLE PaymentLogDetails
     DepositBatchNumber         int               NOT NULL
 )
 
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PurchaseOrders')
+    DROP TABLE PurchaseOrders
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'PurchaseOrderItems')
+    DROP TABLE PurchaseOrderItems
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Suppliers')
+    DROP TABLE Suppliers
+
+CREATE TABLE Suppliers
+(
+    SupplierNumber          int
+    CONSTRAINT PK_Suppliers_SupplierNumber
+                    PRIMARY KEY             NOT NULL,
+    SupplierName            varchar(65)     NOT NULL,
+    [Address]               varchar(40)     NOT NULL,
+    City                    varchar(35)     NOT NULL,
+    Province                char(2)         NOT NULL,
+    PostalCode              char(6)         NOT NULL,
+    Phone                   char(13)        NOT NULL
+)
+
+CREATE TABLE PurchaseOrders
+(
+    PurchaseOrderNumber     int 
+        CONSTRAINT PK_PurchaseOrders_PurchaseOrderNumber
+                     PRIMARY KEY            NOT NULL,
+    SupplierNumber          int
+        CONSTRAINT FK_PurchaseOrders_PurchaseOrderNumber_Suppliers_SupplierNumber
+            FOREIGN KEY REFERENCES Suppliers (SupplierNumber)          NOT NULL,
+    [Date]                  datetime        NOT NULL,
+    Subtotal                money           NOT NULL,
+    GST                     money           NOT NULL,
+    Total                   money           NOT NULL
+)
+
+CREATE TABLE PurchaseOrderItems
+(
+    PurchaseOrderNumber     int
+    CONSTRAINT FK_PurchaseOrderItems_PurchaseOrderNumber_PurchaseOrders_PurchaseOrderNumber
+            FOREIGN KEY REFERENCES PurchaseOrders (PurchaseOrderNumber)             NOT NULL,
+    ItemNumber              varchar(5)
+         CONSTRAINT FK_PurchaseOrderItems_ItemNumber_InventoryItems_ItemNumber
+            FOREIGN KEY REFERENCES InventoryItems (ItemNumber)    NOT NULL,
+    SupplierItemNumber      varchar(25)     NOT NULL,
+    SupplierDescription     varchar(25)     NOT NULL,
+    Quantity                smallint        NOT NULL,
+    Cost                    money           NOT NULL,
+    Amount                  money           NOT NULL
+
+    CONSTRAINT PK_PurchaseOrderItems_PurchaseOrderNumber_InventoryItems_ItemNumber
+        PRIMARY KEY (PurchaseOrderNumber, ItemNumber)
+)
+
+
 
 --Let's insert a few rows of data for the tables (DML Statments)
 PRINT 'Inserting customer data'
@@ -196,7 +249,102 @@ SELECT CustomerNumber, FirstName, LastName,
         PhoneNumber
 FROM Customers
 
+PRINT 'Inserting inventory items'
+INSERT INTO InventoryItems(ItemNumber,ItemDescription, CurrentSalePrice, InStockCount, ReorderLevel)
+    VALUES ('H8726', 'Cleaning Fan belt', 29.95, 3, 5),
+           ('H8621', 'Engine Fan belt', 17.45, 10, 5)
 
+SELECT * FROM InventoryItems
+
+PRINT 'Inserting an order'
+INSERT INTO Orders(CustomerNumber, [Date], Subtotal, GST)
+    VALUES(100, GETDATE(), 17.45, 0.87)
+INSERT INTO OrderDetails(OrderNumber, ItemNumber, Quantity, SellingPrice)
+    VALUES (200, 'H8726', 1, 17.45)
+PRINT '--end of order data--'
+PRINT ''
+GO
+
+
+--A) Allow Address, City, Province, and PostalCode to be NULL
+
+ALTER TABLE Customers
+    ALTER COLUMN [Address] varchar (40) NULL
+GO
+
+ALTER TABLE Customers
+    ALTER COLUMN City varchar(35) NULL
+GO
+
+ALTER TABLE Customers
+    ALTER COLUMN Province char(2) NULL
+GO
+
+ALTER TABLE Customers
+    ALTER COLUMN PostalCode char(6) NULL
+GO
+
+--B) Add a check constraint on the first and Last name to require at least 2 letters
+
+-- % is a wildcard for zero or more characters (letter, digit, or other character)
+-- _ is a wildcard for a single character
+-- [] are used to represent a range or set of characters that are allowed
+
+ALTER TABLE Customers
+    ADD CONSTRAINT CK_Customers_FirstName
+        CHECK (FirstName LIKE '[A-Z][A-Z]%')
+ALTER TABLE Customers
+    ADD CONSTRAINT CK_Customers_LastName
+        CHECK (LastName LIKE '[A-Z][A-Z]%')
+
+INSERT INTO Customers(FirstName, LastName)
+    VALUES('Fred', 'Flintstone')
+INSERT INTO Customers(FirstName, LastName)
+    VALUES('Barney', 'Rubble')
+INSERT INTO Customers(FirstName, LastName, PhoneNumber)
+    VALUES('Wilma', 'Slaghoople', '(403)555-1212')
+INSERT INTO Customers(FirstName, LastName, [Address], [City])
+    VALUES('Betty', 'Mcbricker', '103 Granite Road', 'Bedrock')
+
+SELECT CustomerNumber, FirstName, LastName,
+       [Address] + ' ' + City + ', ' + Province AS 'Customer Address',
+       PhoneNumber
+FROM Customers
+GO
+
+--C) Add an extra bit of information to Customer table. The client wants to start tracking customer emails, so they can send out statments for outstanding payments that are due at the end of the month.
+
+ALTER TABLE Customers
+  ADD Email varchar(30) NULL
+GO  
+
+--D) Add indexes to the Customer's First and Last Name columns
+
+CREATE NONCLUSTERED INDEX IX_Customers_FirstName
+    ON Customers (FirstName)
+CREATE NONCLUSTERED INDEX IX_Customers_LasttName
+    ON Customers (LastName)
+GO
+--E Add a default constraint on the Orders.Date column to use the current date.
+
+ALTER TABLE Orders
+    ADD CONSTRAINT DF_Orders_Date
+       Default GETDATE
+
+GO
+
+INSERT INTO Orders (CustomerNumber, SubTotal, GST)
+    VALUES (101, 150.00, 7.50)
+
+    SELECT OrderNumber, CustomerNumber, Total, [Date]
+FROM Orders
+GO
+
+--F) Change the InventoryItems.ItemDescription column to be NOT NULL
+
+--G) Add an index on the Item's Description column, to improve search.
+
+--H) Data change requests: All inventory items that are less than $5.00 have to have their prices increased by 10%.
 
     /* =================Practice SQL Below=============================================*/
 
