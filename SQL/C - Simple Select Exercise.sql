@@ -74,6 +74,10 @@ GROUP BY PaymentTypeID
 -- 8. How many students are there in each club? Show the clubID and the count
 -- TODO: Student Answer Here....
 
+SELECT	ClubId, COUNT(StudentID) AS 'Members'
+FROM	Activity
+GROUP BY ClubId
+
 -- Check your answer by manually grouping students by their club membership and counting them
 SELECT  ClubId, StudentID
 FROM    Activity
@@ -97,7 +101,21 @@ GROUP BY StaffID
 ORDER BY AVG(Mark) DESC
 
 --12. How many male and female students do we have?
+SELECT	Gender AS 'Gender', COUNT(Gender) AS 'Count'
+FROM	Student 
+GROUP BY Gender
 
 --13. Show the average balance owing for male and female students.
 
+SELECT AVG(BalanceOwing) AS 'Balance'
+FROM		Student
+GROUP BY	Gender 
+ORDER BY	AVG(BalanceOwing)
+
+
 --14. How many students participate in school clubs? Display the club id and the number of students. (Hint: You should be using the Activity table for this question.)
+
+
+SELECT  Activity.ClubId, COUNT(StudentID) AS 'Members'
+FROM    Activity
+GROUP BY ClubId
