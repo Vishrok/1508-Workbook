@@ -163,3 +163,4 @@ WHERE S.LastName LIKE '___'
 SELECT SP.StudentID
 FROM Payment AS SP
 WHERE SP.Amount < 500 OR SP.PaymentTypeID = 5
+
