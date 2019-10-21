@@ -143,9 +143,23 @@ WHERE   CourseID LIKE '____1%' -- four underscores, 1, %
 --                     DMIT158
 
 --11. Select the CourseID's and CourseNames where the CourseName contains the word 'programming'
+SELECT C.CourseID, C.CourseName
+FROM Course AS C
+WHERE CourseName LIKE '%programming%'
 
 --12. Select all the ClubNames who start with N or C.
+Select RG.ClubName
+FROM Club AS RG
+WHERE RG.ClubName LIKE 'N%' OR RG.ClubName LIKE 'C%'
+-- WHERE ClubName LIKE '[NC]%'  (also works)
 
 --13. Select Student Names, Street Address and City where the lastName is only 3 letters long.
+SELECT S.FirstName + ' ' + S.LastName AS 'Student Name', S.StreetAddress, S.City
+FROM Student AS S
+WHERE S.LastName LIKE '___'
 
 --14. Select all the StudentID's where the PaymentAmount < 500 OR the PaymentTypeID is 5
+
+SELECT SP.StudentID
+FROM Payment AS SP
+WHERE SP.Amount < 500 OR SP.PaymentTypeID = 5
