@@ -92,15 +92,24 @@ WHERE   Mark IS NOT NULL
 
 -- 6. select last three characters of all the courses
 
+SELECT  RIGHT(CourseName,3) AS 'Last 3 of Course'
+FROM    Course
 
 -- 7. Select the characters in the position description from characters 8 to 13 for PositionID 5
 
+SELECT  SUBSTRING(PositionDescription,8,5)
+FROM    Position
+WHERE PositionID = 5
 
 -- 8. Select all the Student First Names as upper case.
 
+SELECT  UPPER(FirstName)
+FROM    Student
 
 -- 9. Select the First Names of students whose first names are 3 characters long.
 
+SELECT  UPPER(FirstName)
+FROM    Student
 
 /* ************************************************
     String Functions
