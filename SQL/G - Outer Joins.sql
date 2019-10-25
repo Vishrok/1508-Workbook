@@ -41,21 +41,52 @@ FROM    Student S
 GROUP BY FirstName, LastName
 --5. How many students are in each club? Display club name and count.
 -- TODO: Student Answer Here...
-
+SELECT  C.ClubName,
+        COUNT(A.Studentid) AS 'StudentCount'
+FROM    Club C
+    LEFT OUTER JOIN Activity A
+        ON C.ClubId = A.ClubId
+GROUP BY C.ClubName
 --6. How many times has each course been offered? Display the course ID and course name along with the number of times it has been offered.
 -- TODO: Student Answer Here...
-
+SELECT  C.CourseId, C.CourseName, COUNT(R.CourseId) AS 'Offerings'
+FROM    Course C
+    LEFT OUTER JOIN Registration R
+        ON C.CourseId = R.CourseId
+GROUP BY C.CourseId, C.CourseName
 --7. How many courses have each of the staff taught? Display the full name and the count.
 -- TODO: Student Answer Here...
-
+SELECT  FirstName + ' ' + LastName,
+        COUNT(R.CourseId) AS 'CourseCount'
+FROM    Staff S
+    LEFT OUTER JOIN Registration R ON S.StaffID = R.StaffID
+GROUP BY FirstName, LastName
 --8. How many second-year courses have the staff taught? Include all the staff and their job position.
 --   A second-year course is one where the number portion of the course id starts with a '2'.
 -- TODO: Student Answer Here...
-
+SELECT  PositionDescription,
+        FirstName + ' ' + LastName AS 'StaffName',
+        COUNT(CourseId) AS 'CourseCount'
+FROM    Position P
+LEFT OUTER JOIN Staff S ON P.PositionID = S.PositionID
+    LEFT OUTER JOIN Registration R ON S.StaffID = R.StaffID
+WHERE   CourseId LIKE '____2%' -- An underscore means a single character
+   OR   CourseId IS NULL -- Now I will get staff that haven't taught a course
+GROUP BY PositionDescription, FirstName, LastName
 --9. What is the average payment amount made by each student? Include all the students,
 --   and display the students' full names.
 -- TODO: Student Answer Here...
-
+SELECT  FirstName + ' ' + LastName AS 'Student',
+        AVG(Amount) AS 'AveragePayment'
+FROM    Student S 
+    LEFT OUTER JOIN Payment P
+        ON S.StudentID = P.StudentID
+GROUP BY FirstName, LastName
 --10. Display the names of all students who have not made a payment.
 -- TODO: Student Answer Here...
 
+SELECT  FirstName + ' ' + LastName AS 'StudentName'
+FROM    Student S
+    LEFT OUTER JOIN Payment P
+        ON S.StudentID = P.StudentID
+WHERE   P.StudentID IS NULL
