@@ -81,6 +81,16 @@ SELECT StaffName, CourseName FROM StaffExperience
 
 --4.  Create a view called StudentGrades that retrieves the student ID's, full names, courseId's, course names, and marks for each student.
 -- TODO: Student Answer here
+IF OBJECT_ID('StudentGrades') IS NOT NULL
+    DROP VIEW StudentGrades
+GO
+CREATE VIEW StudentGrades
+AS
+    SELECT  S.StudentID, FirstName + ' ' + LastName AS 'Student Name', C.CourseId, C.CourseName, R.Mark
+    FROM    Student S
+    LEFT OUTER JOIN Registration R ON S.StudentID = R.StudentID
+    LEFT OUTER JOIN Course C ON R.CourseId = C.CourseId
+GO
 
 /* *******************
  * Using the Views
@@ -89,8 +99,13 @@ SELECT StaffName, CourseName FROM StaffExperience
  */
 
 --5.  Use the student grades view to create a grade report for studentID 199899200 that shows the students ID, full name, course names and marks.
+SELECT  SG.StudentID, SG.[Student Name], SG.CourseName, SG.Mark
+FROM    StudentGrades SG
+WHERE   StudentID = 199899200
 
 --6.  Select the same information using the student grades view for studentID 199912010.
+
+
 
 --7.  Retrieve the code for the student grades view from the database.
 
