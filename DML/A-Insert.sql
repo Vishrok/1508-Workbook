@@ -43,6 +43,14 @@ VALUES ('Shane', 'Bell', GETDATE(),
         FROM   Position
         WHERE  PositionDescription = 'Instructor'))
 
+--2.c. We have an open position in the staff.
+SELECT  PositionDescription
+FROM    Position
+WHERE   PositionID NOT IN (SELECT PositionID FROM Staff)
+
+INSERT INTO Staff(FirstName, LastName, PositionID)
+SELECT  'Shelldon', 'Murry', 1
+
 -- 3. There are three additional clubs being started at the school:
 --      - START - Small Tech And Research Teams
 --      - CALM - Coping And Lifestyle Management
@@ -58,6 +66,14 @@ VALUES ('START', 'Small Tech And Research Teams'),
 --    people to add as new students. Write separate insert statement for each new student.
 -- TODO: Student Answer Here....
 
+INSERT INTO Student(FirstName, LastName, Gender, Birthdate, StreetAddress)
+VALUES ('Benjamin', 'Matthews', 'M', 'Oct 5 1986', '7853 W Dallas St')
+
+INSERT INTO Student(FirstName, LastName, Gender, Birthdate, StreetAddress)
+VALUES ('Courtney', 'Tucker', 'F', 'Jan 4 1954', '182 Washington Ave')
+
+INSERT INTO Student(FirstName, LastName, Gender, Birthdate, StreetAddress)
+VALUES ('Frank', 'Hart', 'M', 'Sep 4 1956', '3997 Wycliff Ave')
 
 -- 5. Enroll each of the students you've added into the DMIT104 course.
 --    Use 'Dan Gilleland' as the instructor. At this point, their marks should be NULL.
