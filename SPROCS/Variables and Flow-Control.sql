@@ -1,5 +1,6 @@
 -- Variables and Flow Control
-
+USE [A01-School]
+GO
 -- Declare a variable
 DECLARE @Cost money
 -- Set a value for the variable using a value from the database
@@ -7,6 +8,9 @@ DECLARE @Cost money
 SET @Cost = (SELECT CourseCost FROM Course WHERE CourseId = 'DMIT101')
 PRINT @Cost
 
+--AN alternative way tof assigning the value would be within a SELECT statement
+SELECT @Cost = CourseCost FROM Course WHERE CourseId = 'DMIT101'
+PRINT @Cost
 
 -- Understanding BEGIN/END blocks
 --  A BEGIN/END block basically acts like a pair of curly braces in C#.
