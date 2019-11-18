@@ -86,3 +86,36 @@ CREATE TABLE StudentPaymentArchive
     Amount          money       NOT NULL,
     PaymentDate     datetime    NOT NULL
 )
+GO
+
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'ArchivePayments')
+    DROP TABLE ArchivePayments
+
+AS
+    BEGIN TRANSACTION
+    INSERT INTO StudentPaymentArchive(StudentID, FirstName, LastName, PaymentDate,PaymentMethod, Amount)
+    SELECT  S.StudentID, FirstName, LastName, PaymentDate, PaymentTypeDescription, Amount
+    FROM    Student S
+        INNER JOIN Payment P ON S.StudentID = P.StudentID
+        INNER JOIN PaymentType PT ON P.PaymentTypeID = PT.PaymentTypeID
+    IF @@ERROR > 0
+    BEGIN
+        ROLLBACK TRANSACTION
+        RAISERROR('Unable to archive payments', 16, 1)
+    END
+    ELSE
+    BEGIN
+    --Delete from Payment
+        DELETE FROM Payment
+        IF @@ERROR > 0
+        BEGIN
+            ROLLBACK TRANSACTION
+            RAISERROR('Unable to delete payments after archiving', 16, 1)
+        END
+        ELSE
+        BEGIN
+            COMMIT TRANSACTION
+        END
+    END
+RETURN
+GO
