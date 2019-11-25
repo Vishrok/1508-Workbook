@@ -50,6 +50,7 @@ AS
     IF @@ROWCOUNT > 0 -- It's a good idea to see if any rows were affected first
        AND
        EXISTS (SELECT StudentID FROM Activity
+       WHERE StudentID IN (SELECT StudentID FROM inserted UNION SELECT StudentID FROM deleted)
                GROUP BY StudentID HAVING COUNT(StudentID) > 3)
     BEGIN
         -- State why I'm going to abort the changes
@@ -128,7 +129,49 @@ GO
 SELECT * FROM Student WHERE BalanceOwing > 0
 
 -- Write a stored procedure called RegisterStudent that puts a student in a course and increases the balance owing by the cost of the course.
+IF EXISTS (SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_TYPE = N'PROCEDURE' AND ROUTINE_NAME = 'RegisterStudent')
+    DROP PROCEDURE RegisterStudent
+GO
 
+
+CREATE PROCEDURE RegisterStudent
+
+    @StudentID  int,
+    @CourseId   char(7),
+    @Semester   char(5)
+AS
+    IF @StudentID IS NULL OR @CourseId IS NULL OR @Semester IS NULL
+    BEGIN
+        RAISERROR('',16,1)
+    END
+    ELSE
+    BEGIN
+        BEGIN TRANSACTION
+        INSERT INTO Registration(StudentID, CourseId, Semester)
+        VALUES(@StudentID, @CourseId, @Semester)
+        IF @@ERROR <> 0 OR @@ROWCOUNT = 0
+        BEGIN
+            RAISERROR('',16,1)
+            ROLLBACK TRANSACTION
+        END
+        ELSE
+        BEGIN
+            UPDATE Student
+            SET    BalanceOwing = BalanceOwing + (SELECT CourseCost FROM Course WHERE CourseId = @CourseId)
+            WHERE  StudentID = @StudentID
+            IF @@ERROR <> 0
+            BEGIN
+                RAISERROR('',16,1)
+                ROLLBACK TRANSACTION
+            END
+            ELSE
+            BEGIN
+                COMMIT TRANSACTION
+            END
+        END
+    END
+RETURN
+GO
 
 --4. Our school DBA has suddenly disabled some Foreign Key constraints to deal with performance issues! Create a trigger on the Registration table to ensure that only valid CourseIDs, StudentIDs and StaffIDs are used for grade records. (You can use sp_help tablename to find the name of the foreign key constraints you need to disable to test your trigger.) Have the trigger raise an error for each foreign key that is not valid. If you have trouble with this question create the trigger so it just checks for a valid student ID.
 -- sp_help Registration -- then disable the foreign key constraints....
